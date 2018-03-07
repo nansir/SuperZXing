@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Identify</string>
+	<string name="camera_open_error">打开相机失败</string>
+	<string name="import_img">导入图片</string>
+    <string name="take_photo">拍照</string>
+    <string name="loading">正在加载请稍后!</string>
+    <string name="photo_too_image">图片太大！</string>
+    <string name="memory_card">请插入存储卡</string>
+    <string name="no_network">无网络，请确定网络是否连接!</string>
+
+</resources>
