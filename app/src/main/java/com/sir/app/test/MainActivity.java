@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import com.sir.app.base.BaseActivity;
+import com.sir.library.base.BaseActivity;
 import com.sir.library.zxing.ScanCodeActivity;
 import com.sir.library.zxing.utils.CodeUtils;
 
@@ -17,12 +17,12 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class MainActivity extends BaseActivity {
 
     final int SCAN_CODE = 1001;
-    @BindView(com.sir.library.test.R.id.result)
+    @BindView(R.id.result)
     TextView result;
 
     @Override
     public int bindLayout() {
-        return com.sir.library.test.R.layout.activity_main;
+        return R.layout.activity_main;
     }
 
     @Override
