@@ -15,7 +15,7 @@
     <application android:allowBackup="true">
 
         <activity
-            android:name=".ScanCodeActivity"
+            android:name="com.sir.library.zxing.ScanCodeActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"

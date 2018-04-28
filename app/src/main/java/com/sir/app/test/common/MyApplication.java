@@ -1,7 +1,7 @@
 package com.sir.app.test.common;
 
 import com.sir.app.base.BaseApplication;
-import com.sir.app.zxing.utils.ZXingLibrary;
+import com.sir.library.zxing.utils.ZXingLibrary;
 
 /**
  * Created by zhuyinan on 2018/3/7.

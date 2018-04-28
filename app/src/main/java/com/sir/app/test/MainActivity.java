@@ -8,8 +8,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.sir.app.base.BaseActivity;
-import com.sir.app.zxing.ScanCodeActivity;
-import com.sir.app.zxing.utils.CodeUtils;
+import com.sir.library.zxing.ScanCodeActivity;
+import com.sir.library.zxing.utils.CodeUtils;
 
 import butterknife.BindView;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -17,12 +17,12 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class MainActivity extends BaseActivity {
 
     final int SCAN_CODE = 1001;
-    @BindView(R.id.result)
+    @BindView(com.sir.library.test.R.id.result)
     TextView result;
 
     @Override
     public int bindLayout() {
-        return R.layout.activity_main;
+        return com.sir.library.test.R.layout.activity_main;
     }
 
     @Override
