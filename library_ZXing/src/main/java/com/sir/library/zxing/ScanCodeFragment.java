@@ -1,4 +1,4 @@
-package com.sir.app.zxing;
+package com.sir.library.zxing;
 
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
@@ -16,14 +16,15 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
-import com.sir.app.zxing.camera.CameraManager;
-import com.sir.app.zxing.decoding.CaptureActivityHandler;
-import com.sir.app.zxing.decoding.InactivityTimer;
-import com.sir.app.zxing.utils.CodeUtils;
-import com.sir.app.zxing.view.ViewfinderView;
+import com.sir.library.zxing.camera.CameraManager;
+import com.sir.library.zxing.decoding.CaptureActivityHandler;
+import com.sir.library.zxing.decoding.InactivityTimer;
+import com.sir.library.zxing.utils.CodeUtils;
+import com.sir.library.zxing.view.ViewfinderView;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -35,6 +36,16 @@ import java.util.Vector;
  */
 public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback {
 
+    private static final float BEEP_VOLUME = 0.10f;
+    private static final long VIBRATE_DURATION = 200L;
+    /**
+     * When the beep has finished playing, rewind to queue up another one.
+     */
+    private final MediaPlayer.OnCompletionListener beepListener = new MediaPlayer.OnCompletionListener() {
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            mediaPlayer.seekTo(0);
+        }
+    };
     private CaptureActivityHandler handler;
     private ViewfinderView viewfinderView;
     private boolean hasSurface;
@@ -43,7 +54,6 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
     private InactivityTimer inactivityTimer;
     private MediaPlayer mediaPlayer;
     private boolean playBeep;
-    private static final float BEEP_VOLUME = 0.10f;
     private boolean vibrate;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
@@ -55,7 +65,6 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
         super.onCreate(savedInstanceState);
 
         CameraManager.init(getActivity().getApplication());
-
         hasSurface = false;
         inactivityTimer = new InactivityTimer(this.getActivity());
     }
@@ -80,7 +89,6 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
         viewfinderView = (ViewfinderView) view.findViewById(R.id.viewfinder_view);
         surfaceView = (SurfaceView) view.findViewById(R.id.preview_view);
         surfaceHolder = surfaceView.getHolder();
-
         return view;
     }
 
@@ -91,7 +99,7 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
             initCamera(surfaceHolder);
         } else {
             surfaceHolder.addCallback(this);
-            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            //surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
         decodeFormats = null;
         characterSet = null;
@@ -122,77 +130,20 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
         super.onDestroy();
     }
 
-
-    /**
-     * 处理程序扫描结果
-     *
-     * @param result
-     * @param barcode
-     */
-    public void handleDecode(Result result, Bitmap barcode) {
-        inactivityTimer.onActivity();
-        playBeepSoundAndVibrate();
-
-        if (result == null || TextUtils.isEmpty(result.getText())) {
-            if (analyzeCallback != null) {
-                analyzeCallback.onAnalyzeFailed();
-            }
-        } else {
-            if (analyzeCallback != null) {
-                analyzeCallback.onAnalyzeSuccess(barcode, result.getText());
-            }
-        }
-    }
-
     private void initCamera(SurfaceHolder surfaceHolder) {
         try {
             CameraManager.get().openDriver(surfaceHolder);
             camera = CameraManager.get().getCamera();
         } catch (IOException ioe) {
+            ioe.printStackTrace();
             return;
         } catch (RuntimeException e) {
+            Toast.makeText(getContext(), getResources().getString(R.string.camera_open_error), Toast.LENGTH_SHORT).show();
             return;
         }
         if (handler == null) {
             handler = new CaptureActivityHandler(this, decodeFormats, characterSet, viewfinderView);
         }
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        if (!hasSurface) {
-            hasSurface = true;
-            initCamera(holder);
-        }
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        hasSurface = false;
-        if (camera != null) {
-            if (camera != null && CameraManager.get().isPreviewing()) {
-                if (!CameraManager.get().isUseOneShotPreviewCallback()) {
-                    camera.setPreviewCallback(null);
-                }
-                camera.stopPreview();
-                CameraManager.get().getPreviewCallback().setHandler(null, 0);
-                CameraManager.get().getAutoFocusCallback().setHandler(null, 0);
-                CameraManager.get().setPreviewing(false);
-            }
-        }
-    }
-
-    public Handler getHandler() {
-        return handler;
-    }
-
-    public void drawViewfinder() {
-        viewfinderView.drawViewfinder();
     }
 
     private void initBeepSound() {
@@ -219,7 +170,26 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
         }
     }
 
-    private static final long VIBRATE_DURATION = 200L;
+    /**
+     * 处理程序扫描结果
+     *
+     * @param result
+     * @param barcode
+     */
+    public void handleDecode(Result result, Bitmap barcode) {
+        inactivityTimer.onActivity();
+        playBeepSoundAndVibrate();
+
+        if (result == null || TextUtils.isEmpty(result.getText())) {
+            if (analyzeCallback != null) {
+                analyzeCallback.onAnalyzeFailed();
+            }
+        } else {
+            if (analyzeCallback != null) {
+                analyzeCallback.onAnalyzeSuccess(barcode, result.getText());
+            }
+        }
+    }
 
     private void playBeepSoundAndVibrate() {
         if (playBeep && mediaPlayer != null) {
@@ -231,14 +201,42 @@ public class ScanCodeFragment extends Fragment implements SurfaceHolder.Callback
         }
     }
 
-    /**
-     * When the beep has finished playing, rewind to queue up another one.
-     */
-    private final MediaPlayer.OnCompletionListener beepListener = new MediaPlayer.OnCompletionListener() {
-        public void onCompletion(MediaPlayer mediaPlayer) {
-            mediaPlayer.seekTo(0);
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        if (!hasSurface) {
+            hasSurface = true;
+            initCamera(holder);
         }
-    };
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        hasSurface = false;
+        if (camera != null) {
+            if (camera != null && CameraManager.get().isPreviewing()) {
+                if (!CameraManager.get().isUseOneShotPreviewCallback()) {
+                    camera.setPreviewCallback(null);
+                }
+                camera.stopPreview();
+                CameraManager.get().getPreviewCallback().setHandler(null, 0);
+                CameraManager.get().getAutoFocusCallback().setHandler(null, 0);
+                CameraManager.get().setPreviewing(false);
+            }
+        }
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    public void drawViewfinder() {
+        viewfinderView.drawViewfinder();
+    }
 
     public CodeUtils.AnalyzeCallback getAnalyzeCallback() {
         return analyzeCallback;

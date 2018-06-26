@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 /**
  * This class provides the constants to use when sending an Intent to Barcode Scanner.

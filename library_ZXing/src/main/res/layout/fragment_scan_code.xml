@@ -12,14 +12,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
 
-    <com.sir.app.zxing.view.ViewfinderView
+    <com.sir.library.zxing.view.ViewfinderView
         android:id="@+id/viewfinder_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:inner_corner_color="@color/colorPrimary"
         app:inner_corner_width="2dp"
         app:inner_height="220dp"
-        app:inner_margintop="100dp"
+        app:inner_margin_top="100dp"
         app:inner_width="220dp" />
 
 </FrameLayout>

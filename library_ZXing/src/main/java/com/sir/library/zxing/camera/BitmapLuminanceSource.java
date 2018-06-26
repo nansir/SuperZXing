@@ -1,4 +1,4 @@
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.graphics.Bitmap;
 
@@ -28,15 +28,15 @@ public class BitmapLuminanceSource extends LuminanceSource {
     }
 
     @Override
-    public byte[] getMatrix() {
-        // 返回我们生成好的像素数据
-        return bitmapPixels;
-    }
-
-    @Override
     public byte[] getRow(int y, byte[] row) {
         // 这里要得到指定行的像素数据
         System.arraycopy(bitmapPixels, y * getWidth(), row, 0, getWidth());
         return row;
+    }
+
+    @Override
+    public byte[] getMatrix() {
+        // 返回我们生成好的像素数据
+        return bitmapPixels;
     }
 }

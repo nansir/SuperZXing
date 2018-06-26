@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,10 +28,10 @@ import com.google.zxing.MultiFormatReader;
 import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
-import com.sir.app.zxing.R;
-import com.sir.app.zxing.ScanCodeFragment;
-import com.sir.app.zxing.camera.CameraManager;
-import com.sir.app.zxing.camera.PlanarYUVLuminanceSource;
+import com.sir.library.zxing.R;
+import com.sir.library.zxing.ScanCodeFragment;
+import com.sir.library.zxing.camera.CameraManager;
+import com.sir.library.zxing.camera.PlanarYUVLuminanceSource;
 
 import java.util.Hashtable;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.os.IBinder;
 import android.util.Log;
@@ -56,6 +56,27 @@ final class FlashlightManager {
         setFlashlight(false);
     }
 
+    private static void setFlashlight(boolean active) {
+        if (iHardwareService != null) {
+            invoke(setFlashEnabledMethod, iHardwareService, active);
+        }
+    }
+
+    private static Object invoke(Method method, Object instance, Object... args) {
+        try {
+            return method.invoke(instance, args);
+        } catch (IllegalAccessException e) {
+            Log.w(TAG, "Unexpected error while invoking " + method, e);
+            return null;
+        } catch (InvocationTargetException e) {
+            Log.w(TAG, "Unexpected error while invoking " + method, e.getCause());
+            return null;
+        } catch (RuntimeException re) {
+            Log.w(TAG, "Unexpected error while invoking " + method, re);
+            return null;
+        }
+    }
+
     static void disableFlashlight() {
         setFlashlight(false);
     }
@@ -89,14 +110,6 @@ final class FlashlightManager {
         return invoke(asInterfaceMethod, null, hardwareService);
     }
 
-    private static Method getSetFlashEnabledMethod(Object iHardwareService) {
-        if (iHardwareService == null) {
-            return null;
-        }
-        Class<?> proxyClass = iHardwareService.getClass();
-        return maybeGetMethod(proxyClass, "setFlashlightEnabled", boolean.class);
-    }
-
     private static Class<?> maybeForName(String name) {
         try {
             return Class.forName(name);
@@ -121,25 +134,12 @@ final class FlashlightManager {
         }
     }
 
-    private static Object invoke(Method method, Object instance, Object... args) {
-        try {
-            return method.invoke(instance, args);
-        } catch (IllegalAccessException e) {
-            Log.w(TAG, "Unexpected error while invoking " + method, e);
-            return null;
-        } catch (InvocationTargetException e) {
-            Log.w(TAG, "Unexpected error while invoking " + method, e.getCause());
-            return null;
-        } catch (RuntimeException re) {
-            Log.w(TAG, "Unexpected error while invoking " + method, re);
+    private static Method getSetFlashEnabledMethod(Object iHardwareService) {
+        if (iHardwareService == null) {
             return null;
         }
-    }
-
-    private static void setFlashlight(boolean active) {
-        if (iHardwareService != null) {
-            invoke(setFlashEnabledMethod, iHardwareService, active);
-        }
+        Class<?> proxyClass = iHardwareService.getClass();
+        return maybeGetMethod(proxyClass, "setFlashlightEnabled", boolean.class);
     }
 
 }

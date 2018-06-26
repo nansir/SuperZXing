@@ -1,4 +1,4 @@
-package com.sir.app.zxing.utils;
+package com.sir.library.zxing.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,10 +18,10 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import com.sir.app.zxing.ScanCodeFragment;
-import com.sir.app.zxing.camera.BitmapLuminanceSource;
-import com.sir.app.zxing.camera.CameraManager;
-import com.sir.app.zxing.decoding.DecodeFormatManager;
+import com.sir.library.zxing.ScanCodeFragment;
+import com.sir.library.zxing.camera.BitmapLuminanceSource;
+import com.sir.library.zxing.camera.CameraManager;
+import com.sir.library.zxing.decoding.DecodeFormatManager;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -177,17 +177,6 @@ public class CodeUtils {
     }
 
     /**
-     * 解析二维码结果
-     */
-    public interface AnalyzeCallback {
-
-        public void onAnalyzeSuccess(Bitmap mBitmap, String result);
-
-        public void onAnalyzeFailed();
-    }
-
-
-    /**
      * 为CaptureFragment设置layout参数
      *
      * @param captureFragment
@@ -218,5 +207,15 @@ public class CodeUtils {
                 camera.setParameters(parameter);
             }
         }
+    }
+
+    /**
+     * 解析二维码结果
+     */
+    public interface AnalyzeCallback {
+
+        public void onAnalyzeSuccess(Bitmap mBitmap, String result);
+
+        public void onAnalyzeFailed();
     }
 }

@@ -4,17 +4,22 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.sir.app.base.BaseActivity;
-import com.sir.app.zxing.ScanCodeActivity;
-import com.sir.app.zxing.utils.CodeUtils;
+import com.sir.library.base.BaseActivity;
+import com.sir.library.zxing.ScanCodeActivity;
+import com.sir.library.zxing.utils.CodeUtils;
+
+import java.util.List;
 
 import butterknife.BindView;
+import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements EasyPermissions.PermissionCallbacks {
 
     final int SCAN_CODE = 1001;
     @BindView(R.id.result)
@@ -64,4 +69,27 @@ public class MainActivity extends BaseActivity {
             result.setText(resultStr);
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> perms) {
+        Toast.makeText(this, "在权限授予", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> perms) {
+        if (requestCode == 100 && EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            new AppSettingsDialog.Builder(this)
+                    .setTitle(getString(R.string.permissions_camera))
+                    .setRationale(getString(R.string.permissions))
+                    .setPositiveButton(getString(R.string.setting))
+                    .build().show();
+        }
+    }
+
 }

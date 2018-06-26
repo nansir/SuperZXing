@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -22,8 +22,7 @@ import android.content.DialogInterface;
 /**
  * Simple listener used to exit the app in a few cases.
  */
-public final class FinishListener
-        implements DialogInterface.OnClickListener, DialogInterface.OnCancelListener, Runnable {
+public final class FinishListener implements DialogInterface.OnClickListener, DialogInterface.OnCancelListener, Runnable {
 
     private final Activity activityToFinish;
 
@@ -35,12 +34,12 @@ public final class FinishListener
         run();
     }
 
-    public void onClick(DialogInterface dialogInterface, int i) {
-        run();
-    }
-
     public void run() {
         activityToFinish.finish();
+    }
+
+    public void onClick(DialogInterface dialogInterface, int i) {
+        run();
     }
 
 }

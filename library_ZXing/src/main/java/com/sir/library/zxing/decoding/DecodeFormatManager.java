@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -28,12 +28,11 @@ import java.util.regex.Pattern;
 
 public class DecodeFormatManager {
 
-    private static final Pattern COMMA_PATTERN = Pattern.compile(",");
-
     public static final Vector<BarcodeFormat> PRODUCT_FORMATS;
     public static final Vector<BarcodeFormat> ONE_D_FORMATS;
     public static final Vector<BarcodeFormat> QR_CODE_FORMATS;
     public static final Vector<BarcodeFormat> DATA_MATRIX_FORMATS;
+    private static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
     static {
         PRODUCT_FORMATS = new Vector<BarcodeFormat>(5);
@@ -66,14 +65,6 @@ public class DecodeFormatManager {
         return parseDecodeFormats(scanFormats, intent.getStringExtra(Intents.Scan.MODE));
     }
 
-    static Vector<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
-        List<String> formats = inputUri.getQueryParameters(Intents.Scan.SCAN_FORMATS);
-        if (formats != null && formats.size() == 1 && formats.get(0) != null) {
-            formats = Arrays.asList(COMMA_PATTERN.split(formats.get(0)));
-        }
-        return parseDecodeFormats(formats, inputUri.getQueryParameter(Intents.Scan.MODE));
-    }
-
     private static Vector<BarcodeFormat> parseDecodeFormats(Iterable<String> scanFormats,
                                                             String decodeMode) {
         if (scanFormats != null) {
@@ -102,6 +93,14 @@ public class DecodeFormatManager {
             }
         }
         return null;
+    }
+
+    static Vector<BarcodeFormat> parseDecodeFormats(Uri inputUri) {
+        List<String> formats = inputUri.getQueryParameters(Intents.Scan.SCAN_FORMATS);
+        if (formats != null && formats.size() == 1 && formats.get(0) != null) {
+            formats = Arrays.asList(COMMA_PATTERN.split(formats.get(0)));
+        }
+        return parseDecodeFormats(formats, inputUri.getQueryParameter(Intents.Scan.MODE));
     }
 
 }

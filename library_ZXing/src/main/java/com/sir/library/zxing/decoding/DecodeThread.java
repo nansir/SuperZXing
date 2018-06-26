@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -22,7 +22,7 @@ import android.os.Looper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.ResultPointCallback;
-import com.sir.app.zxing.ScanCodeFragment;
+import com.sir.library.zxing.ScanCodeFragment;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -30,15 +30,14 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * This thread does all the heavy lifting of decoding the images.
- *
  */
 final class DecodeThread extends Thread {
 
     public static final String BARCODE_BITMAP = "barcode_bitmap";
     private final ScanCodeFragment fragment;
     private final Hashtable<DecodeHintType, Object> hints;
-    private Handler handler;
     private final CountDownLatch handlerInitLatch;
+    private Handler handler;
 
     DecodeThread(ScanCodeFragment fragment,
                  Vector<BarcodeFormat> decodeFormats,
@@ -48,10 +47,10 @@ final class DecodeThread extends Thread {
         this.fragment = fragment;
         handlerInitLatch = new CountDownLatch(1);
 
-        hints = new Hashtable<DecodeHintType, Object>(3);
+        hints = new Hashtable<>(3);
 
         if (decodeFormats == null || decodeFormats.isEmpty()) {
-            decodeFormats = new Vector<BarcodeFormat>();
+            decodeFormats = new Vector<>();
             decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
             decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
             decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
@@ -82,5 +81,4 @@ final class DecodeThread extends Thread {
         handlerInitLatch.countDown();
         Looper.loop();
     }
-
 }

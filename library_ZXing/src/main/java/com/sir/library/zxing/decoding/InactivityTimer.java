@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.app.Activity;
 
@@ -31,9 +31,10 @@ public final class InactivityTimer {
 
     private static final int INACTIVITY_DELAY_SECONDS = 5 * 60;
 
-    private final ScheduledExecutorService inactivityTimer =
-            Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
+    private final ScheduledExecutorService inactivityTimer = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory());
+
     private final Activity activity;
+
     private ScheduledFuture<?> inactivityFuture = null;
 
     public InactivityTimer(Activity activity) {
@@ -67,5 +68,4 @@ public final class InactivityTimer {
             return thread;
         }
     }
-
 }

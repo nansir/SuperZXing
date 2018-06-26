@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -49,6 +49,10 @@ final class CameraConfigurationManager {
         this.context = context;
     }
 
+    public static int getDesiredSharpness() {
+        return DESIRED_SHARPNESS;
+    }
+
     /**
      * Reads, one time, values from the camera that are needed by the app.
      */
@@ -75,40 +79,6 @@ final class CameraConfigurationManager {
 
         // cameraResolution = getCameraResolution(parameters, screenResolution);
         Log.d(TAG, "Camera resolution: " + screenResolution);
-    }
-
-    /**
-     * Sets the camera up to take preview images which are used for both preview and decoding.
-     * We detect the preview format here so that buildLuminanceSource() can build an appropriate
-     * LuminanceSource subclass. In the future we may want to force YUV420SP as it's the smallest,
-     * and the planar Y can be used for barcode scanning without a copy in some cases.
-     */
-    void setDesiredCameraParameters(Camera camera) {
-        Camera.Parameters parameters = camera.getParameters();
-        Log.d(TAG, "Setting preview size: " + cameraResolution);
-        parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
-        setFlash(parameters);
-        setZoom(parameters);
-        //setSharpness(parameters);
-        //modify here
-        camera.setDisplayOrientation(90);
-        camera.setParameters(parameters);
-    }
-
-    Point getCameraResolution() {
-        return cameraResolution;
-    }
-
-    Point getScreenResolution() {
-        return screenResolution;
-    }
-
-    int getPreviewFormat() {
-        return previewFormat;
-    }
-
-    String getPreviewFormatString() {
-        return previewFormatString;
     }
 
     private static Point getCameraResolution(Camera.Parameters parameters, Point screenResolution) {
@@ -178,22 +148,22 @@ final class CameraConfigurationManager {
         return null;
     }
 
-    private static int findBestMotZoomValue(CharSequence stringValues, int tenDesiredZoom) {
-        int tenBestValue = 0;
-        for (String stringValue : COMMA_PATTERN.split(stringValues)) {
-            stringValue = stringValue.trim();
-            double value;
-            try {
-                value = Double.parseDouble(stringValue);
-            } catch (NumberFormatException nfe) {
-                return tenDesiredZoom;
-            }
-            int tenValue = (int) (10.0 * value);
-            if (Math.abs(tenDesiredZoom - value) < Math.abs(tenDesiredZoom - tenBestValue)) {
-                tenBestValue = tenValue;
-            }
-        }
-        return tenBestValue;
+    /**
+     * Sets the camera up to take preview images which are used for both preview and decoding.
+     * We detect the preview format here so that buildLuminanceSource() can build an appropriate
+     * LuminanceSource subclass. In the future we may want to force YUV420SP as it's the smallest,
+     * and the planar Y can be used for barcode scanning without a copy in some cases.
+     */
+    void setDesiredCameraParameters(Camera camera) {
+        Camera.Parameters parameters = camera.getParameters();
+        Log.d(TAG, "Setting preview size: " + cameraResolution);
+        parameters.setPreviewSize(cameraResolution.x, cameraResolution.y);
+        setFlash(parameters);
+        setZoom(parameters);
+        //setSharpness(parameters);
+        //modify here
+        camera.setDisplayOrientation(90);
+        camera.setParameters(parameters);
     }
 
     private void setFlash(Camera.Parameters parameters) {
@@ -275,8 +245,38 @@ final class CameraConfigurationManager {
         }
     }
 
-    public static int getDesiredSharpness() {
-        return DESIRED_SHARPNESS;
+    private static int findBestMotZoomValue(CharSequence stringValues, int tenDesiredZoom) {
+        int tenBestValue = 0;
+        for (String stringValue : COMMA_PATTERN.split(stringValues)) {
+            stringValue = stringValue.trim();
+            double value;
+            try {
+                value = Double.parseDouble(stringValue);
+            } catch (NumberFormatException nfe) {
+                return tenDesiredZoom;
+            }
+            int tenValue = (int) (10.0 * value);
+            if (Math.abs(tenDesiredZoom - value) < Math.abs(tenDesiredZoom - tenBestValue)) {
+                tenBestValue = tenValue;
+            }
+        }
+        return tenBestValue;
+    }
+
+    Point getCameraResolution() {
+        return cameraResolution;
+    }
+
+    Point getScreenResolution() {
+        return screenResolution;
+    }
+
+    int getPreviewFormat() {
+        return previewFormat;
+    }
+
+    String getPreviewFormatString() {
+        return previewFormatString;
     }
 
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.view;
+package com.sir.library.zxing.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -29,9 +29,9 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.google.zxing.ResultPoint;
-import com.sir.app.zxing.R;
-import com.sir.app.zxing.camera.CameraManager;
-import com.sir.app.zxing.utils.DisplayUtil;
+import com.sir.library.zxing.R;
+import com.sir.library.zxing.camera.CameraManager;
+import com.sir.library.zxing.utils.DisplayUtil;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,17 +47,17 @@ public final class ViewfinderView extends View {
     private final int OPAQUE = 0xFF;
 
     private final Paint paint;
-    private Bitmap resultBitmap;
     private final int maskColor;
     private final int resultColor;
     private final int resultPointColor;
+    private Bitmap resultBitmap;
 
     // 扫描框边角颜色
-    private int innercornercolor;
+    private int innerCornerColor;
     // 扫描框边角长度
-    private int innercornerlength;
+    private int innerCornerLength;
     // 扫描框边角宽度
-    private int innercornerwidth;
+    private int innerCornerWidth;
     // 扫描线移动的y
     private int scanLineTop;
     // 扫描线移动速度
@@ -89,39 +89,39 @@ public final class ViewfinderView extends View {
      * @param attrs
      */
     private void initInnerRect(Context context, AttributeSet attrs) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.innerrect);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.innerRect);
 
         // 扫描框距离顶部
-        float innerMarginTop = ta.getDimension(R.styleable.innerrect_inner_margintop, -1);
+        float innerMarginTop = ta.getDimension(R.styleable.innerRect_inner_margin_top, -1);
         if (innerMarginTop != -1) {
             CameraManager.FRAME_MARGINTOP = (int) innerMarginTop;
         }
 
         // 扫描框的宽度
-        CameraManager.FRAME_WIDTH = (int) ta.getDimension(R.styleable.innerrect_inner_width, DisplayUtil.screenWidthPx / 2);
+        CameraManager.FRAME_WIDTH = (int) ta.getDimension(R.styleable.innerRect_inner_width, DisplayUtil.screenWidthPx / 2);
 
         // 扫描框的高度
-        CameraManager.FRAME_HEIGHT = (int) ta.getDimension(R.styleable.innerrect_inner_height, DisplayUtil.screenWidthPx / 2);
+        CameraManager.FRAME_HEIGHT = (int) ta.getDimension(R.styleable.innerRect_inner_height, DisplayUtil.screenWidthPx / 2);
 
         // 扫描框边角颜色
-        innercornercolor = ta.getColor(R.styleable.innerrect_inner_corner_color, Color.parseColor("#45DDDD"));
+        innerCornerColor = ta.getColor(R.styleable.innerRect_inner_corner_color, Color.parseColor("#45DDDD"));
         // 扫描框边角长度
-        innercornerlength = (int) ta.getDimension(R.styleable.innerrect_inner_corner_length, 65);
+        innerCornerLength = (int) ta.getDimension(R.styleable.innerRect_inner_corner_length, 65);
         // 扫描框边角宽度
-        innercornerwidth = (int) ta.getDimension(R.styleable.innerrect_inner_corner_width, 15);
+        innerCornerWidth = (int) ta.getDimension(R.styleable.innerRect_inner_corner_width, 15);
 
         // 扫描bitmap
-        Drawable drawable = ta.getDrawable(R.styleable.innerrect_inner_scan_bitmap);
+        Drawable drawable = ta.getDrawable(R.styleable.innerRect_inner_scan_bitmap);
         if (drawable != null) {
 
         }
 
         // 扫描控件
-        scanLight = BitmapFactory.decodeResource(getResources(), ta.getResourceId(R.styleable.innerrect_inner_scan_bitmap, R.drawable.scan_light));
+        scanLight = BitmapFactory.decodeResource(getResources(), ta.getResourceId(R.styleable.innerRect_inner_scan_bitmap, R.drawable.scan_light));
         // 扫描速度
-        SCAN_VELOCITY = ta.getInt(R.styleable.innerrect_inner_scan_speed, 5);
+        SCAN_VELOCITY = ta.getInt(R.styleable.innerRect_inner_scan_speed, 5);
 
-        isCircle = ta.getBoolean(R.styleable.innerrect_inner_scan_iscircle, true);
+        isCircle = ta.getBoolean(R.styleable.innerRect_inner_scan_is_circle, true);
 
         ta.recycle();
     }
@@ -184,30 +184,6 @@ public final class ViewfinderView extends View {
         }
     }
 
-
-    /**
-     * 绘制移动扫描线
-     *
-     * @param canvas
-     * @param frame
-     */
-    private void drawScanLight(Canvas canvas, Rect frame) {
-
-        if (scanLineTop == 0) {
-            scanLineTop = frame.top;
-        }
-
-        if (scanLineTop >= frame.bottom - 30) {
-            scanLineTop = frame.top;
-        } else {
-            scanLineTop += SCAN_VELOCITY;
-        }
-        Rect scanRect = new Rect(frame.left, scanLineTop, frame.right,
-                scanLineTop + 30);
-        canvas.drawBitmap(scanLight, null, scanRect, paint);
-    }
-
-
     /**
      * 绘制取景框边框
      *
@@ -216,11 +192,11 @@ public final class ViewfinderView extends View {
      */
     private void drawFrameBounds(Canvas canvas, Rect frame) {
 
-        paint.setColor(innercornercolor);
+        paint.setColor(innerCornerColor);
         paint.setStyle(Paint.Style.FILL);
 
-        int corWidth = innercornerwidth;
-        int corLength = innercornerlength;
+        int corWidth = innerCornerWidth;
+        int corLength = innerCornerLength;
 
         // 左上角
         canvas.drawRect(frame.left, frame.top, frame.left + corWidth, frame.top
@@ -242,6 +218,28 @@ public final class ViewfinderView extends View {
                 frame.right, frame.bottom, paint);
         canvas.drawRect(frame.right - corLength, frame.bottom - corWidth,
                 frame.right, frame.bottom, paint);
+    }
+
+    /**
+     * 绘制移动扫描线
+     *
+     * @param canvas
+     * @param frame
+     */
+    private void drawScanLight(Canvas canvas, Rect frame) {
+
+        if (scanLineTop == 0) {
+            scanLineTop = frame.top;
+        }
+
+        if (scanLineTop >= frame.bottom - 30) {
+            scanLineTop = frame.top;
+        } else {
+            scanLineTop += SCAN_VELOCITY;
+        }
+        Rect scanRect = new Rect(frame.left, scanLineTop, frame.right,
+                scanLineTop + 30);
+        canvas.drawBitmap(scanLight, null, scanRect, paint);
     }
 
     public void drawViewfinder() {

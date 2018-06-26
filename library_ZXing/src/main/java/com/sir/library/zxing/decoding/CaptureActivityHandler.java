@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.decoding;
+package com.sir.library.zxing.decoding;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -27,11 +27,11 @@ import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
-import com.sir.app.zxing.R;
-import com.sir.app.zxing.ScanCodeFragment;
-import com.sir.app.zxing.camera.CameraManager;
-import com.sir.app.zxing.view.ViewfinderResultPointCallback;
-import com.sir.app.zxing.view.ViewfinderView;
+import com.sir.library.zxing.R;
+import com.sir.library.zxing.ScanCodeFragment;
+import com.sir.library.zxing.camera.CameraManager;
+import com.sir.library.zxing.view.ViewfinderResultPointCallback;
+import com.sir.library.zxing.view.ViewfinderView;
 
 import java.util.Vector;
 
@@ -46,12 +46,6 @@ public final class CaptureActivityHandler extends Handler {
     private final DecodeThread decodeThread;
     private State state;
 
-    private enum State {
-        PREVIEW,
-        SUCCESS,
-        DONE
-    }
-
     public CaptureActivityHandler(ScanCodeFragment fragment, Vector<BarcodeFormat> decodeFormats,
                                   String characterSet, ViewfinderView viewfinderView) {
         this.fragment = fragment;
@@ -62,6 +56,15 @@ public final class CaptureActivityHandler extends Handler {
         // Start ourselves capturing previews and decoding.
         CameraManager.get().startPreview();
         restartPreviewAndDecode();
+    }
+
+    private void restartPreviewAndDecode() {
+        if (state == State.SUCCESS) {
+            state = State.PREVIEW;
+            CameraManager.get().requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
+            CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
+            fragment.drawViewfinder();
+        }
     }
 
     @Override
@@ -120,12 +123,9 @@ public final class CaptureActivityHandler extends Handler {
         removeMessages(R.id.decode_failed);
     }
 
-    private void restartPreviewAndDecode() {
-        if (state == State.SUCCESS) {
-            state = State.PREVIEW;
-            CameraManager.get().requestPreviewFrame(decodeThread.getHandler(), R.id.decode);
-            CameraManager.get().requestAutoFocus(this, R.id.auto_focus);
-            fragment.drawViewfinder();
-        }
+    private enum State {
+        PREVIEW,
+        SUCCESS,
+        DONE
     }
 }

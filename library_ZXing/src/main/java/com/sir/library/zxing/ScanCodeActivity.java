@@ -1,13 +1,12 @@
-package com.sir.app.zxing;
+package com.sir.library.zxing;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
-import com.sir.app.zxing.utils.CodeUtils;
+import com.sir.library.zxing.utils.CodeUtils;
 
 /**
  * Initial the camera
@@ -16,15 +15,6 @@ import com.sir.app.zxing.utils.CodeUtils;
  * Contact by 445181052@qq.com
  */
 public class ScanCodeActivity extends AppCompatActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_scan_code);
-        ScanCodeFragment captureFragment = new ScanCodeFragment();
-        captureFragment.setAnalyzeCallback(analyzeCallback);
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_zxing, captureFragment).commit();
-    }
 
     /**
      * 二维码解析回调函数
@@ -52,6 +42,15 @@ public class ScanCodeActivity extends AppCompatActivity {
             ScanCodeActivity.this.finish();
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_scan_code);
+        ScanCodeFragment captureFragment = new ScanCodeFragment();
+        captureFragment.setAnalyzeCallback(analyzeCallback);
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_layout_zxing, captureFragment).commit();
+    }
 
     public void backClose(View view) {
         finish();

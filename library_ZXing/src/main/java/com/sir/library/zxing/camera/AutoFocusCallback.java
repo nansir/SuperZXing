@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.hardware.Camera;
 import android.os.Handler;

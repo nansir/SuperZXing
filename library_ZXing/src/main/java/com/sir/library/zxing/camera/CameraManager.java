@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
@@ -34,13 +34,12 @@ import java.io.IOException;
  */
 public final class CameraManager {
 
+    static final int SDK_INT; // Later we can use Build.VERSION.SDK_INT
     public static int FRAME_WIDTH = -1;
     public static int FRAME_HEIGHT = -1;
     public static int FRAME_MARGINTOP = -1;
 
     private static CameraManager cameraManager;
-
-    static final int SDK_INT; // Later we can use Build.VERSION.SDK_INT
 
     static {
         int sdkInt;
@@ -55,11 +54,6 @@ public final class CameraManager {
 
     private final Context context;
     private final CameraConfigurationManager configManager;
-    private Camera camera;
-    private Rect framingRect;
-    private Rect framingRectInPreview;
-    private boolean initialized;
-    private boolean previewing;
     private final boolean useOneShotPreviewCallback;
     /**
      * Preview frames are delivered here, which we pass on to the registered handler. Make sure to
@@ -70,6 +64,27 @@ public final class CameraManager {
      * Autofocus callbacks arrive here, and are dispatched to the Handler which requested them.
      */
     private final AutoFocusCallback autoFocusCallback;
+    private Camera camera;
+    private Rect framingRect;
+    private Rect framingRectInPreview;
+    private boolean initialized;
+    private boolean previewing;
+
+    private CameraManager(Context context) {
+
+        this.context = context;
+        this.configManager = new CameraConfigurationManager(context);
+
+        // Camera.setOneShotPreviewCallback() has a race condition in Cupcake, so we use the older
+        // Camera.setPreviewCallback() on 1.5 and earlier. For Donut and later, we need to use
+        // the more efficient one shot callback, as the older one can swamp the system and cause it
+        // to run out of memory. We can't use SDK_INT because it was introduced in the Donut SDK.
+        //useOneShotPreviewCallback = Integer.parseInt(Build.VERSION.SDK) > Build.VERSION_CODES.CUPCAKE;
+        useOneShotPreviewCallback = Integer.parseInt(Build.VERSION.SDK) > 3; // 3 = Cupcake
+
+        previewCallback = new PreviewCallback(configManager, useOneShotPreviewCallback);
+        autoFocusCallback = new AutoFocusCallback();
+    }
 
     /**
      * Initializes this static object with the Context of the calling Activity.
@@ -89,22 +104,6 @@ public final class CameraManager {
      */
     public static CameraManager get() {
         return cameraManager;
-    }
-
-    private CameraManager(Context context) {
-
-        this.context = context;
-        this.configManager = new CameraConfigurationManager(context);
-
-        // Camera.setOneShotPreviewCallback() has a race condition in Cupcake, so we use the older
-        // Camera.setPreviewCallback() on 1.5 and earlier. For Donut and later, we need to use
-        // the more efficient one shot callback, as the older one can swamp the system and cause it
-        // to run out of memory. We can't use SDK_INT because it was introduced in the Donut SDK.
-        //useOneShotPreviewCallback = Integer.parseInt(Build.VERSION.SDK) > Build.VERSION_CODES.CUPCAKE;
-        useOneShotPreviewCallback = Integer.parseInt(Build.VERSION.SDK) > 3; // 3 = Cupcake
-
-        previewCallback = new PreviewCallback(configManager, useOneShotPreviewCallback);
-        autoFocusCallback = new AutoFocusCallback();
     }
 
     /**
@@ -206,30 +205,37 @@ public final class CameraManager {
     }
 
     /**
-     * Calculates the framing rect which the UI should draw to show the user where to place the
-     * barcode. This target helps with alignment as well as forces the user to hold the device
-     * far enough away to ensure the image will be in focus.
+     * A factory method to build the appropriate LuminanceSource object based on the format
+     * of the preview buffers, as described by Camera.Parameters.
      *
-     * @return The rectangle to draw on screen in window coordinates.
+     * @param data   A preview frame.
+     * @param width  The width of the image.
+     * @param height The height of the image.
+     * @return A PlanarYUVLuminanceSource instance.
      */
-    public Rect getFramingRect() {
-        Point screenResolution = configManager.getScreenResolution();
-        // if (framingRect == null) {
-        if (camera == null) {
-            return null;
+    public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int height) {
+        Rect rect = getFramingRectInPreview();
+        int previewFormat = configManager.getPreviewFormat();
+        String previewFormatString = configManager.getPreviewFormatString();
+        switch (previewFormat) {
+            // This is the standard Android format which all devices are REQUIRED to support.
+            // In theory, it's the only one we should ever care about.
+            case PixelFormat.YCbCr_420_SP:
+                // This format has never been seen in the wild, but is compatible as we only care
+                // about the Y channel, so allow it.
+            case PixelFormat.YCbCr_422_SP:
+                return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
+                        rect.width(), rect.height());
+            default:
+                // The Samsung Moment incorrectly uses this variant instead of the 'sp' version.
+                // Fortunately, it too has all the Y data up front, so we can read it.
+                if ("yuv420p".equals(previewFormatString)) {
+                    return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
+                            rect.width(), rect.height());
+                }
         }
-
-        int leftOffset = (screenResolution.x - FRAME_WIDTH) / 2;
-
-        int topOffset = 0;
-        if (FRAME_MARGINTOP != -1) {
-            topOffset = FRAME_MARGINTOP;
-        } else {
-            topOffset = (screenResolution.y - FRAME_HEIGHT) / 2;
-        }
-        framingRect = new Rect(leftOffset, topOffset, leftOffset + FRAME_WIDTH, topOffset + FRAME_HEIGHT);
-        // }
-        return framingRect;
+        throw new IllegalArgumentException("Unsupported picture format: " +
+                previewFormat + '/' + previewFormatString);
     }
 
     /**
@@ -277,37 +283,30 @@ public final class CameraManager {
    */
 
     /**
-     * A factory method to build the appropriate LuminanceSource object based on the format
-     * of the preview buffers, as described by Camera.Parameters.
+     * Calculates the framing rect which the UI should draw to show the user where to place the
+     * barcode. This target helps with alignment as well as forces the user to hold the device
+     * far enough away to ensure the image will be in focus.
      *
-     * @param data   A preview frame.
-     * @param width  The width of the image.
-     * @param height The height of the image.
-     * @return A PlanarYUVLuminanceSource instance.
+     * @return The rectangle to draw on screen in window coordinates.
      */
-    public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int height) {
-        Rect rect = getFramingRectInPreview();
-        int previewFormat = configManager.getPreviewFormat();
-        String previewFormatString = configManager.getPreviewFormatString();
-        switch (previewFormat) {
-            // This is the standard Android format which all devices are REQUIRED to support.
-            // In theory, it's the only one we should ever care about.
-            case PixelFormat.YCbCr_420_SP:
-                // This format has never been seen in the wild, but is compatible as we only care
-                // about the Y channel, so allow it.
-            case PixelFormat.YCbCr_422_SP:
-                return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
-                        rect.width(), rect.height());
-            default:
-                // The Samsung Moment incorrectly uses this variant instead of the 'sp' version.
-                // Fortunately, it too has all the Y data up front, so we can read it.
-                if ("yuv420p".equals(previewFormatString)) {
-                    return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top,
-                            rect.width(), rect.height());
-                }
+    public Rect getFramingRect() {
+        Point screenResolution = configManager.getScreenResolution();
+        // if (framingRect == null) {
+        if (camera == null) {
+            return null;
         }
-        throw new IllegalArgumentException("Unsupported picture format: " +
-                previewFormat + '/' + previewFormatString);
+
+        int leftOffset = (screenResolution.x - FRAME_WIDTH) / 2;
+
+        int topOffset = 0;
+        if (FRAME_MARGINTOP != -1) {
+            topOffset = FRAME_MARGINTOP;
+        } else {
+            topOffset = (screenResolution.y - FRAME_HEIGHT) / 2;
+        }
+        framingRect = new Rect(leftOffset, topOffset, leftOffset + FRAME_WIDTH, topOffset + FRAME_HEIGHT);
+        // }
+        return framingRect;
     }
 
     public Context getContext() {
@@ -322,6 +321,10 @@ public final class CameraManager {
         return previewing;
     }
 
+    public void setPreviewing(boolean previewing) {
+        this.previewing = previewing;
+    }
+
     public boolean isUseOneShotPreviewCallback() {
         return useOneShotPreviewCallback;
     }
@@ -332,9 +335,5 @@ public final class CameraManager {
 
     public AutoFocusCallback getAutoFocusCallback() {
         return autoFocusCallback;
-    }
-
-    public void setPreviewing(boolean previewing) {
-        this.previewing = previewing;
     }
 }

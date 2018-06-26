@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.sir.app.zxing.camera;
+package com.sir.library.zxing.camera;
 
 import android.graphics.Bitmap;
 
@@ -26,6 +26,7 @@ import com.google.zxing.LuminanceSource;
  * superfluous pixels around the perimeter and speed up decoding.
  */
 public final class PlanarYUVLuminanceSource extends LuminanceSource {
+
     private final byte[] yuvData;
     private final int dataWidth;
     private final int dataHeight;

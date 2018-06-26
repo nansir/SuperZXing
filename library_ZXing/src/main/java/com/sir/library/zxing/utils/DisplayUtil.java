@@ -1,4 +1,4 @@
-package com.sir.app.zxing.utils;
+package com.sir.library.zxing.utils;
 
 import android.content.Context;
 
@@ -9,11 +9,11 @@ import android.content.Context;
 public class DisplayUtil {
 
     public static int screenWidthPx; //屏幕宽 px
-    public static int screenhightPx; //屏幕高 px
+    public static int screenHeightPx; //屏幕高 px
     public static float density;//屏幕密度
     public static int densityDPI;//屏幕密度
     public static float screenWidthDip;//  dp单位
-    public static float screenHightDip;//  dp单位
+    public static float screenHeightDip;//  dp单位
 
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
